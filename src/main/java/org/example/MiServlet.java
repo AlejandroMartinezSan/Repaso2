@@ -6,8 +6,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Serial;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,53 +13,50 @@ import java.sql.SQLException;
 
 @WebServlet("/MiServlet")
 public class MiServlet extends HttpServlet {
-    @Serial
-    private static final long serialVersionUID =1L;
+    private static final long serialVersionUID = 1L;
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//conexion a la base
-        Connection con = null;
-        PreparedStatement ps = null;
-        String url = "jdbc:mysql://127.0.0.1/basesitan=user=root&password=1234";
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        req.setCharacterEncoding("UTF-8");
+
+        String correo = req.getParameter("exampleInputEmail1");
+        String nombre = req.getParameter("exampleInputName1");
+        String sexoValor = req.getParameter("exampleselect");
+
+        String sexo;
+        if ("1".equals(sexoValor)) {
+            sexo = "Masculino";
+        } else if ("2".equals(sexoValor)) {
+            sexo = "Femenino";
+        } else {
+            sexo = "No especificado";
+        }
+
+        String url = "jdbc:mysql://127.0.0.1/basesitan?user=root&password=1234";
         String sql = "INSERT INTO TABLAN(correo,nombre,sexo) VALUES (?,?,?)";
-        int row =0;
-        resp.setContentType("text/html;charset=UTF-8");
 
-        PrintWriter out = resp.getWriter();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection con = DriverManager.getConnection(url);
+                 PreparedStatement ps = con.prepareStatement(sql)) {
 
-        try{
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        con = DriverManager.getConnection(url);
-        System.out.println(con.isClosed());
-        ps = con.prepareStatement(sql);
+                ps.setString(1, correo);
+                ps.setString(2, nombre);
+                ps.setString(3, sexo);
 
-        if (ps == null){
-            return;
+                int filas = ps.executeUpdate();
+                req.setAttribute("filas", filas);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new ServletException(e);
         }
-        ps.setString(1,req.getParameter("exampleInputEmail"));
-        ps.setString(2,req.getParameter("exampleInputName"));
-        ps.setString(3,req.getParameter("exampleselect"));
 
-        row = ps.executeUpdate();
-        con.close();
+        req.setAttribute("correo", correo);
+        req.setAttribute("nombre", nombre);
+        req.setAttribute("sexo", sexo);
 
-        }    catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        out.println("<html>");
-        out.println("<body>");
-        out.println("<h1>Hola desde Servlet</h1>");
-        out.println("<p>Tomcat 9 + IntelliJ + Maven</p>");
-        out.println("</body>");
-        out.println("</html>");
-        }
-        @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-
-        }
+        req.getRequestDispatcher("/resultado.jsp").forward(req, resp);
+    }
 }

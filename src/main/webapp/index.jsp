@@ -9,7 +9,7 @@
     <h1>Formulario</h1>
         <div class="mb3">
             <label for="exampleInputEmail1" class="form-label"> Email </label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-described-by="emailHelp">
+            <input type="email" class="form-control" id="exampleInputEmail1" name="exampleInputEmail1" aria-described-by="emailHelp">
             <div id="emailHelp" class="form-text"> no compartas tus datos personales</div>
     </div>
         <div class="mb3">
